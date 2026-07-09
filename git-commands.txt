@@ -1,0 +1,6 @@
+git init -b main
+git add .
+git commit -m "Initial git create"
+gh repo create Sensor-Electronic-Technology/kube-deployments -y
+gh repo create Sensor-Electronic-Technology/kube-deployments --public --source=. --remote=orgin
+git push -u orgin main
