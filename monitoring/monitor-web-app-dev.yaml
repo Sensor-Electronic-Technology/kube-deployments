@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitor-web-dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: monitor-web-dev
+    spec:
+      containers:
+      - name: monitor-web-dev
+        image: aelmendorf234/monitorwebapp:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+        - name: TZ
+          value: America/New_York
+        resources:
+          requests:
+            memory: "2Gi"
+          limits:
+            memory: "4Gi"
+  selector:
+    matchLabels:
+      app: monitor-web-dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitor-web-dev
+spec:
+  loadBalancerIP: 172.20.4.210
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: monitor-web-dev

@@ -1,0 +1,1 @@
+watch -n 1 microk8s.kubectl get pods -n keycloak-ns

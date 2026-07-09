@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: e1thstream
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: e1thstream
+    spec:
+      containers:
+      - name: e1thstream
+        image: aelmendorf234/monitoringdatadataloggingservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+        - name: DEVICEID
+          value: e1th
+        - name: SERVICE_TYPE
+          value: GenericModbus
+  selector:
+    matchLabels:
+      app: e1thstream
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: e1thstream
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: e1thstream

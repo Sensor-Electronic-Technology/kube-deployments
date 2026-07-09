@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: epi-webapp
+  namespace: epi-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: epi-webapp
+    spec:
+      containers:
+      - name: epi-webapp
+        image: aelmendorf234/episystem-webapp:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+        - name: TZ
+          value: America/New_York
+        resources:
+          requests:
+            memory: "2Gi"
+          limits:
+            memory: "4Gi"
+  selector:
+    matchLabels:
+      app: epi-webapp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epi-webapp
+  namespace: epi-system
+  # annotations:
+  #   metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
+spec:
+  loadBalancerIP: 172.20.4.210
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: epi-webapp

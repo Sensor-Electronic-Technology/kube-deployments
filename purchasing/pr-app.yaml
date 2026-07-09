@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pr-app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pr-app
+    spec:
+      containers:
+      - name: pr-app
+        image: aelmendorf234/prapp:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+  selector:
+    matchLabels:
+      app: pr-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pr-app
+spec:
+  loadBalancerIP: 172.20.4.207
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: pr-app

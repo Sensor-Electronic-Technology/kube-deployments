@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configapi
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: configapi
+    spec:
+      containers:
+      - name: configapi
+        image: aelmendorf234/configapiservice:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+  selector:
+    matchLabels:
+      app: configapi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configapi
+spec:
+  loadBalancerIP: 172.20.4.202
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: configapi

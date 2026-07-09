@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: epi-auth
+  namespace: epi-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: epi-auth
+    spec:
+      containers:
+      - name: epi-auth
+        image: aelmendorf234/epi-auth-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:8080
+        - name: TZ
+          value: America/New_York
+        resources:
+          requests:
+            memory: "1Gi"
+          limits:
+            memory: "2Gi"
+  selector:
+    matchLabels:
+      app: epi-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epi-auth
+  namespace: epi-system
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
+spec:
+  loadBalancerIP: 172.20.4.208
+  type: LoadBalancer
+  ports:
+  - port: 55000
+    targetPort: 8080
+  selector:
+    app: epi-auth

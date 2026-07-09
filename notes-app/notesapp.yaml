@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: sysnotesapp
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sysnotesapp
+    spec:
+      containers:
+      - name: sysnotesapp
+        image: aelmendorf234/notesapp:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+  selector:
+    matchLabels:
+      app: sysnotesapp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sysnotesapp
+spec:
+  loadBalancerIP: 172.20.4.205
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 32654
+  selector:
+    app: sysnotesapp

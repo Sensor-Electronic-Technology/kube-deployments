@@ -1,0 +1,10 @@
+# addresspool.yaml
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: main-addresspool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.20.4.206-172.20.4.210

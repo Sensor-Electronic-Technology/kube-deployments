@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: episystem-char-webapp
+  namespace: epi-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: episystem-char-webapp
+        namespace: epi-system
+    spec:
+      containers:
+      - name: episystem-char-webapp
+        image: aelmendorf234/episystem.char-webapp:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:8080
+  selector:
+    matchLabels:
+      app: episystem-char-webapp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: episystem-char-webapp
+  namespace: epi-system
+spec:
+  loadBalancerIP: 172.20.4.209
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: episystem-char-webapp

@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: epidata-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: epidata-api
+    spec:
+      containers:
+      - name: epidata-api
+        image: aelmendorf234/epidata-api:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+
+  selector:
+    matchLabels:
+      app: epidata-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epidata-api
+spec:
+  loadBalancerIP: 172.20.4.204
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 32207
+  selector:
+    app: epidata-api

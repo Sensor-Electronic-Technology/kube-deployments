@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: epi-api-gateway
+  namespace: epi-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: epi-api-gateway
+    spec:
+      containers:
+      - name: epi-api-gateway
+        image: aelmendorf234/epi-api-gateway:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:8080
+        - name: TZ
+          value: America/New_York
+  selector:
+    matchLabels:
+      app: epi-api-gateway
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: epi-api-gateway
+  namespace: epi-system
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
+spec:
+  loadBalancerIP: 172.20.4.208
+  type: LoadBalancer
+  ports:
+  - port: 40000
+    targetPort: 8080
+  selector:
+    app: epi-api-gateway

@@ -1,0 +1,1 @@
+kubectl exec --stdin --tty thstream-5c765885c7-75tg6  -- /bin/bash

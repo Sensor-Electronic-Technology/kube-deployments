@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-test
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: auth-test
+    spec:
+      containers:
+      - name: auth-test
+        image: aelmendorf234/auth-test:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+        - name: TZ
+          value: America/New_York
+  selector:
+    matchLabels:
+      app: auth-test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-test
+spec:
+  loadBalancerIP: 172.20.4.213
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: auth-test

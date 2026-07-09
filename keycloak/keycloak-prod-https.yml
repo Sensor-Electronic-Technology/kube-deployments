@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: keycloak-ns
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:latest
+          imagePullPolicy: Always
+          args: ["start","--features=scripts"]
+          # ports:
+          #   - containerPort: 8080
+          #     name: http
+          ports:
+            - containerPort: 8443
+              name: https
+            # - containerPort: 8080
+            #   name: http
+            - containerPort: 7800
+              name: jgroups
+          env:
+            - name: KC_DB_SCHEMA
+              value: "keycloak"
+            - name: KC_HTTP_ENABLED
+              value: "true"
+            # External Postgres Configuration
+            - name: KC_DB
+              value: postgres
+            - name: KC_HTTPS_CERTIFICATE_FILE
+              value: "/opt/keycloak/certs/tls.crt"
+            - name: KC_HTTPS_CERTIFICATE_KEY_FILE
+              value: "/opt/keycloak/certs/tls.key"
+            - name: KC_HOSTNAME
+              value: "keycloak.seti.com"
+            - name: KC_PROXY_HEADERS
+              value: "xforwarded"
+            - name: KC_CACHE_STACK
+              value: "jdbc-ping"
+          envFrom:
+          - configMapRef:
+              name: keycloak-config-map
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2000Mi
+            requests:
+              cpu: 500m
+              memory: 1700Mi
+          volumeMounts:
+            - name: cert-volume
+              mountPath: /opt/keycloak/certs
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 45
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 75
+            periodSeconds: 15
+      volumes:
+        - name: cert-volume
+          secret:
+            secretName: keycloak-tls-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: keycloak-ns
+spec:
+  loadBalancerIP: 172.20.4.212
+  type: LoadBalancer
+  ports:
+  - name: https
+    port: 443        # Users type: https://://yourdomain.com
+    targetPort: 8443 # Targets Keycloak's secure internal container port
+  # - name: http
+  #   port: 80        
+  #   targetPort: 8080 
+  selector:
+    app: keycloak

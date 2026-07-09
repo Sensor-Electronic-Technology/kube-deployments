@@ -1,0 +1,43 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: marten-cluster
+  namespace: epi-system
+spec:
+  instances: 3  # High availability: 1 Primary and 2 Replicas
+  storage:
+    size: 20Gi
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  managed:
+    roles:
+      - name: app
+        createdb: true
+        login: true
+
+      - name: developer_user
+        login: true
+        superuser: false
+        createdb: false
+        passwordSecret:
+          name: developer-user-credentials
+
+      - name: cluster_admin
+        login: true
+        superuser: true 
+        passwordSecret:
+          name: cluster-admin-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: marten-cluster-lb
+  namespace: epi-system
+spec:
+  loadBalancerIP: 172.20.4.211
+  type: LoadBalancer
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    "cnpg.io/cluster": marten-cluster
+    "role": primary

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wafer-api-dev
+  namespace: epi-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wafer-api-dev
+    spec:
+      containers:
+      - name: wafer-api-dev
+        image: aelmendorf234/wafer-management-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:8080
+        - name: TZ
+          value: America/New_York
+  selector:
+    matchLabels:
+      app: wafer-api-dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wafer-api-dev
+  namespace: epi-system
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
+spec:
+  loadBalancerIP: 172.20.4.208
+  type: LoadBalancer
+  ports:
+  - port: 51000
+    targetPort: 8080
+  selector:
+    app: wafer-api-dev

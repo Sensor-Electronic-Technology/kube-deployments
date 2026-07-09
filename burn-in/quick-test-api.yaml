@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: qt-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: qt-api
+    spec:
+      containers:
+      - name: qt-api
+        image: aelmendorf234/quick-test-api:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+
+  selector:
+    matchLabels:
+      app: qt-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qt-api
+spec:
+  loadBalancerIP: 172.20.4.206
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: qt-api

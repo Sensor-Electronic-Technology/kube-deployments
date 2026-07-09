@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apibench
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: apibench
+    spec:
+      containers:
+      - name: apibench
+        image: aelmendorf234/api_bench:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:80
+  selector:
+    matchLabels:
+      app: apibench
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apibench
+spec:
+  loadBalancerIP: 172.20.4.205
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: apibench

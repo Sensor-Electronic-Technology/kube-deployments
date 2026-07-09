@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: process-tracking-api-dev
+  namespace: epi-system-dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: process-tracking-api-dev
+    spec:
+      containers:
+      - name: process-tracking-api-dev
+        image: aelmendorf234/process-tracking-api-dev:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:8080
+        - name: TZ
+          value: America/New_York
+  selector:
+    matchLabels:
+      app: process-tracking-api-dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: process-tracking-api-dev
+  namespace: epi-system-dev
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
+spec:
+  loadBalancerIP: 172.20.4.210
+  type: LoadBalancer
+  ports:
+  - port: 54000
+    targetPort: 8080
+  selector:
+    app: process-tracking-api-dev

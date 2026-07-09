@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: burn-api
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: burn-api
+    spec:
+      containers:
+      - name: burn-api
+        image: aelmendorf234/burn-in-api:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:5000
+
+  selector:
+    matchLabels:
+      app: burn-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: burn-api
+spec:
+  loadBalancerIP: 172.20.4.204
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: burn-api

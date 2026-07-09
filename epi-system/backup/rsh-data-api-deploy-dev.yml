@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rsh-data-api-dev
+  namespace: epi-system-dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rsh-data-api-dev
+    spec:
+      containers:
+      - name: rsh-data-api-dev
+        image: aelmendorf234/rsh-data-api:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: http://*:8080
+        - name: TZ
+          value: America/New_York
+  selector:
+    matchLabels:
+      app: rsh-data-api-dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rsh-data-api-dev
+  namespace: epi-system-dev
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
+spec:
+  loadBalancerIP: 172.20.4.208
+  type: LoadBalancer
+  ports:
+  - port: 52000
+    targetPort: 8080
+  selector:
+    app: rsh-data-api-dev
