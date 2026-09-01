@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-test
+  namespace: epi-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-test
+  template:
+    metadata:
+      labels:
+        app: auth-test
+    spec:
+      containers:
+        - name: auth-test
+          image: aelmendorf234/auth-test:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 443 # Update containerPort to HTTPS
+              name: https
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1024Mi"
+          env:
+            - name: TZ
+              value: "America/New_York"
+            - name: ASPNETCORE_URLS
+              value: "https://*:443;http://*:80"
+            - name: ASPNETCORE_Kestrel__Certificates__Default__Path
+              value: "/app/certs/tls.crt"
+            - name: ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+              value: "/app/certs/tls.key"
+          volumeMounts:
+            - name: cert-volume
+              mountPath: /app/certs
+              readOnly: true
+      
+      # Pull from your shared wildcard certificate secret storage
+      volumes:
+        - name: cert-volume
+          secret:
+            secretName: episystem-tls-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-test
+  namespace: epi-system
+spec:
+  loadBalancerIP: 172.20.4.213
+  type: LoadBalancer
+  ports:
+    - name: https
+      port: 443        
+      targetPort: 443 # Matches the container's encrypted port
+    - name: http
+      port: 80       
+      targetPort: 80 # Matches the container's encrypted port
+  selector:
+    app: auth-test
