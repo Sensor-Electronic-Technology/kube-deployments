@@ -1,0 +1,15 @@
+172.20.4.200    monitor-web
+172.20.4.201    textwebapp
+172.20.4.202    configapi
+172.20.4.203    burndash
+172.20.4.204    burn-api
+172.20.4.205    sysnotesapp
+172.20.4.206    qt-api
+172.20.4.207    #EMPTY
+172.20.4.208    epi-system
+172.20.4.209    episystem-char-webapp
+172.20.4.210    #EMPTY
+172.20.4.211    marten-cluster
+172.20.4.212    keycloak
+
+172.20.4.213 - 172.20.4.219 #EMPTY

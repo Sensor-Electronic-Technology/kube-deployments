@@ -6,3 +6,6 @@
 
 # Target all nested .env files across directories
 **/*.env
+**/*.key
+**/*.crt
+**/*.csr
