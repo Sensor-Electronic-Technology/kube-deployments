@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pr-app-https-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pr-app-https-dev
+  template:
+    metadata:
+      labels:
+        app: pr-app-https-dev
+    spec:
+      # Init container to import and trust the custom root certificate
+      initContainers:
+      - name: import-ca
+        image: mcr.microsoft.com/dotnet/aspnet:10.0
+        # command: ["sh", "-c", "cp /secrets/certs/tls.crt /usr/local/share/ca-certificates/custom-root-ca.crt && update-ca-certificates"]
+        command:
+        - sh
+        - -c
+        - |
+          mkdir -p /usr/local/share/ca-certificates/
+          cp /secrets/certs/tls.crt /usr/local/share/ca-certificates/custom-root-ca.crt
+          update-ca-certificates
+        volumeMounts:
+        - name: cert-volume
+          mountPath: /secrets/certs
+          readOnly: true
+        - name: trusted-ssl-certs
+          mountPath: /etc/ssl/certs
+      containers:
+      - name: pr-app-https-dev
+        image: aelmendorf234/prapp:devhttpsdev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: "Production"
+        - name: DOTNET_gcServer
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080;https://+:8443"
+        # 2. Point Kestrel to the certificate file mount path
+        - name: Kestrel__Certificates__Default__Path
+          value: "/secrets/certs/tls.crt"
+        # 3. Point Kestrel to the matching private key file path
+        - name: Kestrel__Certificates__Default__KeyPath
+          value: "/secrets/certs/tls.key"
+        volumeMounts:
+        - name: cert-volume
+          mountPath: "/secrets/certs"
+          readOnly: true
+        - name: trusted-ssl-certs
+          mountPath: /etc/ssl/certs
+        - name: dataprotection-storage
+          mountPath: /secrets/dataprotection
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "2000m"
+            memory: "2000Mi"
+      volumes:
+      - name: cert-volume
+        secret:
+          secretName: set-tls-secret
+      - name: trusted-ssl-certs
+        emptyDir: {}
+      - name: dataprotection-storage
+        persistentVolumeClaim:
+          claimName: dataprotection-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pr-app-https-dev
+spec:
+  loadBalancerIP: 172.20.4.214
+  type: LoadBalancer
+  ports:
+  - name: https
+    port: 443
+    targetPort: 8443
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    app: pr-app-https-dev

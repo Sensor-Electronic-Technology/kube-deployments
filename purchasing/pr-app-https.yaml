@@ -79,7 +79,7 @@ kind: Service
 metadata:
   name: pr-app-https
 spec:
-  loadBalancerIP: 172.20.4.214
+  loadBalancerIP: 172.20.4.215
   type: LoadBalancer
   ports:
   - name: https
